@@ -1,0 +1,52 @@
+<div class="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+  <div class="w-full max-w-md">
+    <mat-card class="shadow-lg">
+      <div class="p-6">
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-bold text-primary">Welcome Back</h1>
+          <p class="text-gray-600 mt-2">Sign in to your account</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+          <!-- Email Field -->
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" placeholder="Enter your email" type="email" required>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email is required</mat-error>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Please enter a valid email</mat-error>
+          </mat-form-field>
+
+          <!-- Password Field -->
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" required>
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+              Password must be at least 6 characters
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Submit Button -->
+          <button mat-raised-button color="primary" type="submit" class="w-full py-2"
+                  [disabled]="loginForm.invalid || isLoading">
+            <div class="flex justify-center items-center">
+              <mat-spinner diameter="20" *ngIf="isLoading" class="mr-2"></mat-spinner>
+              <span>Sign In</span>
+            </div>
+          </button>
+        </form>
+
+        <!-- Register Link -->
+        <div class="text-center mt-6">
+          <p class="text-gray-600">
+            Don't have an account?
+            <a mat-button color="primary" (click)="navigateToRegister()" class="font-medium">Create Account</a>
+          </p>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>
