@@ -2,16 +2,10 @@ import { Component } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {MatError, MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from '@angular/material/card';
-import {MatAnchor, MatButton, MatIconButton} from '@angular/material/button';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
-import {MatIcon} from '@angular/material/icon';
-import {NgForOf, NgIf} from '@angular/common';
+import {CommonModule} from '@angular/common';
 import {AuthService} from '../../services';
 import {RegisterRequest} from '../../models';
-import {MatOption} from '@angular/material/core';
-import {MatSelect} from '@angular/material/select';
+import {MaterialModule} from '../../../../shared';
 
 @Component({
   selector: 'dm-register',
@@ -19,25 +13,9 @@ import {MatSelect} from '@angular/material/select';
   styleUrls: ['./register.component.scss'],
   standalone: true,
   imports: [
-    MatFormField,
-    MatLabel,
-    MatCardContent,
-    MatCardHeader,
-    MatCardTitle,
-    MatCard,
-    MatError,
-    MatFormField,
-    MatButton,
-    MatProgressSpinner,
-    MatIcon,
-    ReactiveFormsModule,
-    MatInput,
-    MatIconButton,
-    NgIf,
-    NgForOf,
-    MatAnchor,
-    MatSelect,
-    MatOption,
+    CommonModule,
+    MaterialModule,
+    ReactiveFormsModule
   ]
 })
 export class RegisterComponent {
@@ -55,7 +33,9 @@ export class RegisterComponent {
   ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
+      fullName: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
+      role: ['USER', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validator: this.checkPasswords });
@@ -76,7 +56,9 @@ export class RegisterComponent {
     const registerData: RegisterRequest = {
       username: this.registerForm.get('username')?.value,
       email: this.registerForm.get('email')?.value,
-      password: this.registerForm.get('password')?.value
+      password: this.registerForm.get('password')?.value,
+      fullName: this.registerForm.get('fullName')?.value,
+      role: this.registerForm.get('role')?.value,
     };
 
     this.authService.register(registerData).subscribe({

@@ -9,8 +9,9 @@ import {MatError, MatFormField, MatInput, MatLabel} from '@angular/material/inpu
 import {MatAnchor, MatButton, MatIconButton} from '@angular/material/button';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatIcon} from '@angular/material/icon';
-import {NgIf} from '@angular/common';
+import {CommonModule, NgIf} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
+import {MaterialModule} from '../../../../shared';
 
 @Component({
   selector: 'dm-login',
@@ -18,22 +19,9 @@ import {HttpClient} from '@angular/common/http';
   styleUrls: ['./login.component.scss'],
   standalone: true,
   imports: [
-    MatFormField,
-    MatLabel,
-    MatCardContent,
-    MatCardTitle,
-    MatCardHeader,
-    MatCard,
-    MatError,
-    MatFormField,
-    MatButton,
-    MatProgressSpinner,
-    MatIcon,
+    CommonModule,
+    MaterialModule,
     ReactiveFormsModule,
-    MatInput,
-    MatIconButton,
-    NgIf,
-    MatAnchor
   ],
   providers: [
     HttpClient,
@@ -67,7 +55,7 @@ export class LoginComponent {
     this.authService.login(loginData).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/documents']);
       },
       error: (error) => {
         this.isLoading = false;

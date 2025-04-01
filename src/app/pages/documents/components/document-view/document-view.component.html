@@ -1,0 +1,119 @@
+<!--<div class="container mx-auto p-4">-->
+<!--  <div class="flex items-center mb-6">-->
+<!--    <button mat-icon-button routerLink="/documents">-->
+<!--      <mat-icon>arrow_back</mat-icon>-->
+<!--    </button>-->
+<!--    <h1 class="text-2xl font-bold ml-2">-->
+<!--      {{ document()?.name || 'Document Details' }}-->
+<!--    </h1>-->
+<!--  </div>-->
+
+<!--  <div *ngIf="loading()" class="flex justify-center my-12">-->
+<!--    <mat-spinner diameter="40"></mat-spinner>-->
+<!--  </div>-->
+
+<!--  <div *ngIf="error()" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">-->
+<!--    <p>{{ error() }}</p>-->
+<!--    <button mat-button color="primary" routerLink="/documents">Back to Documents</button>-->
+<!--  </div>-->
+
+<!--  <div *ngIf="document() && !loading() && !error()">-->
+<!--    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">-->
+<!--      &lt;!&ndash; Document info card &ndash;&gt;-->
+<!--      <div class="md:col-span-1">-->
+<!--        <mat-card class="p-4">-->
+<!--          <mat-card-header>-->
+<!--            <mat-card-title>Document Information</mat-card-title>-->
+<!--          </mat-card-header>-->
+<!--          <mat-card-content class="pt-4">-->
+<!--            <div class="mb-4">-->
+<!--              <div class="text-gray-500 text-sm">Status</div>-->
+<!--              <app-status-badge [status]="document()!.status"></app-status-badge>-->
+<!--            </div>-->
+
+<!--            <div class="mb-4">-->
+<!--              <div class="text-gray-500 text-sm">Created By</div>-->
+<!--              <div>{{ document()!.creator.fullName }}</div>-->
+<!--              <div class="text-sm">{{ document()!.creator.email }}</div>-->
+<!--            </div>-->
+
+<!--            <div class="mb-4">-->
+<!--              <div class="text-gray-500 text-sm">Created At</div>-->
+<!--              <div>{{ document()!.createdAt | date:'medium' }}</div>-->
+<!--            </div>-->
+
+<!--            <div class="mb-4">-->
+<!--              <div class="text-gray-500 text-sm">Last Updated</div>-->
+<!--              <div>{{ document()!.updatedAt | date:'medium' }}</div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Actions based on role and document status &ndash;&gt;-->
+<!--            <div class="mt-6 space-y-2">-->
+<!--              &lt;!&ndash; User actions &ndash;&gt;-->
+<!--              <ng-container *ngIf="currentUser()?.role === 'USER' && currentUser()?.id === document()!.creator.id">-->
+<!--                &lt;!&ndash; Edit button &ndash;&gt;-->
+<!--                <a *ngIf="document()!.status === 'DRAFT' || document()!.status === 'REVOKE'"-->
+<!--                   [routerLink]="['/documents', document()!.id, 'edit']"-->
+<!--                   mat-stroked-button color="primary" class="w-full">-->
+<!--                  <mat-icon>edit</mat-icon> Edit Document-->
+<!--                </a>-->
+
+<!--                &lt;!&ndash; Send to review button &ndash;&gt;-->
+<!--                <button *ngIf="document()!.status === 'DRAFT'"-->
+<!--                        mat-stroked-button color="primary" class="w-full"-->
+<!--                        (click)="sendToReview(document()!.id)">-->
+<!--                  <mat-icon>send</mat-icon> Send to Review-->
+<!--                </button>-->
+
+<!--                &lt;!&ndash; Revoke review button &ndash;&gt;-->
+<!--                <button *ngIf="document()!.status === 'READY_FOR_REVIEW'"-->
+<!--                        mat-stroked-button color="warn" class="w-full"-->
+<!--                        (click)="revokeReview(document()!.id)">-->
+<!--                  <mat-icon>cancel</mat-icon> Revoke Review-->
+<!--                </button>-->
+
+<!--                &lt;!&ndash; Delete button &ndash;&gt;-->
+<!--                <button *ngIf="document()!.status === 'DRAFT' || document()!.status === 'REVOKE'"-->
+<!--                        mat-stroked-button color="warn" class="w-full"-->
+<!--                        (click)="deleteDocument(document()!.id)">-->
+<!--                  <mat-icon>delete</mat-icon> Delete Document-->
+<!--                </button>-->
+<!--              </ng-container>-->
+
+<!--              &lt;!&ndash; Reviewer actions &ndash;&gt;-->
+<!--              <ng-container *ngIf="currentUser()?.role === 'REVIEWER'">-->
+<!--                &lt;!&ndash; Mark as under review &ndash;&gt;-->
+<!--                <button *ngIf="document()!.status === 'READY_FOR_REVIEW'"-->
+<!--                        mat-stroked-button color="primary" class="w-full"-->
+<!--                        (click)="changeStatus(document()!.id, 'UNDER_REVIEW')">-->
+<!--                  <mat-icon>fact_check</mat-icon> Mark as Under Review-->
+<!--                </button>-->
+
+<!--                &lt;!&ndash; Approve document &ndash;&gt;-->
+<!--                <button *ngIf="document()!.status === 'UNDER_REVIEW'"-->
+<!--                        mat-stroked-button color="primary" class="w-full"-->
+<!--                        (click)="changeStatus(document()!.id, 'APPROVED')">-->
+<!--                  <mat-icon>check_circle</mat-icon> Approve Document-->
+<!--                </button>-->
+
+<!--                &lt;!&ndash; Decline document &ndash;&gt;-->
+<!--                <button *ngIf="document()!.status === 'UNDER_REVIEW'"-->
+<!--                        mat-stroked-button color="warn" class="w-full"-->
+<!--                        (click)="changeStatus(document()!.id, 'DECLINED')">-->
+<!--                  <mat-icon>highlight_off</mat-icon> Decline Document-->
+<!--                </button>-->
+<!--              </ng-container>-->
+<!--            </div>-->
+<!--          </mat-card-content>-->
+<!--        </mat-card>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Document viewer &ndash;&gt;-->
+<!--      <div class="md:col-span-3">-->
+<!--        <div class="bg-white rounded-lg shadow overflow-hidden">-->
+<!--          <div id="pspdfkit-container" style="width: 100%; height: 70vh;"></div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->

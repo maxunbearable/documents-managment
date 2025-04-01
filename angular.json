@@ -28,7 +28,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "./node_modules/@nutrient-sdk/viewer/dist/nutrient-viewer-lib/",
+                "output": "./assets/nutrient-viewer-lib/"
               }
             ],
             "styles": [
@@ -88,7 +89,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "./node_modules/@nutrient-sdk/viewer/dist/nutrient-viewer-lib/",
+                "output": "./assets/nutrient-viewer-lib/"
               }
             ],
             "styles": [

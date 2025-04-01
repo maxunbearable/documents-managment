@@ -1,12 +1,44 @@
 // src/styles.scss
 
 // Custom Theming for Angular Material
-@import "@angular/material/prebuilt-themes/indigo-pink.css"; // Example theme
-
-@import "theme";
+@use '@angular/material' as mat;
 
 // Include the common styles for Angular Material
-// Define your custom palette
+@include mat.core();
+
+$accent-palette: (
+  50: #fce4ec,
+  100: #f8bbd0,
+  200: #f48fb1,
+  300: #f06292,
+  400: #ec407a,
+  500: #e91e63,
+  600: #d81b60,
+  700: #c2185b,
+  800: #ad1457,
+  900: #880e4f,
+  A100: #ff80ab,  // Light accent shade
+  A200: #ff4081,  // Default accent shade
+  A400: #f50057,  // Darker accent shade
+  A700: #c51162,  // Very dark accent shade
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: white,    // Contrast for A100
+    A200: white,    // Contrast for A200
+    A400: white,    // Contrast for A400
+    A700: white,    // Contrast for A700
+  )
+);
+
 $primary-palette: (
   50: #e8eaf6,
   100: #c5cae9,
@@ -43,6 +75,10 @@ $accent-palette: (
   700: #c2185b,
   800: #ad1457,
   900: #880e4f,
+  A100: #ff80ab,
+  A200: #ff4081,
+  A400: #f50057,
+  A700: #c51162,
   contrast: (
     50: rgba(black, 0.87),
     100: rgba(black, 0.87),
@@ -54,6 +90,10 @@ $accent-palette: (
     700: white,
     800: white,
     900: white,
+    A100: white,
+    A200: white,
+    A400: white,
+    A700: white,
   )
 );
 
@@ -81,3 +121,73 @@ $warn-palette: (
     900: white,
   )
 );
+
+// Define the theme
+$app-primary: mat.m2-define-palette($primary-palette, 500);
+$app-accent: mat.m2-define-palette($accent-palette, A200, A100, A400);
+$app-warn: mat.m2-define-palette($warn-palette, 500);
+
+$app-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $app-primary,
+    accent: $app-accent,
+    warn: $app-warn,
+  ),
+  typography: mat.m2-define-typography-config(),
+  density: 0,
+));
+
+// Apply the theme to Angular Material components
+@include mat.all-component-themes($app-theme);
+
+// Tailwind directives
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Global styles
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Custom utilites and overrides
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+// Improve button appearance when used with Tailwind
+.mat-mdc-raised-button {
+  &.mat-primary {
+    @apply text-white;
+  }
+}
+
+// Override some Material styles
+.mdc-text-field--outlined {
+  @apply border-0;
+}
+
+// Text color utilities that match material themes
+.text-primary {
+  color: mat.m2-get-color-from-palette($app-primary, 500) !important;
+}
+
+.text-accent {
+  color: mat.m2-get-color-from-palette($app-accent, 500) !important;
+}
+
+.text-warn {
+  color: mat.m2-get-color-from-palette($app-warn, 500) !important;
+}
+
+// Custom shadow that works well with Material and Tailwind
+.app-shadow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mat-mdc-notch-piece.mdc-notched-outline__notch {
+  border-right: none;
+}

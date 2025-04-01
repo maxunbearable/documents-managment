@@ -1,0 +1,185 @@
+<div class="container mx-auto p-4 flex flex-col flex-1">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Document Management</h1>
+
+    <div *ngIf="(isReviewer$ | async) === false">
+      <a routerLink="/documents/upload" mat-raised-button color="primary">
+        <mat-icon>add</mat-icon> Upload Document
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <mat-card class="mb-6 p-4">
+    <form [formGroup]="filterForm" (ngSubmit)="applyFilter()">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="">All</mat-option>
+            <mat-option value="DRAFT">Draft</mat-option>
+            <mat-option value="REVOKE">Revoked</mat-option>
+            <mat-option value="READY_FOR_REVIEW">Ready for Review</mat-option>
+            <mat-option value="UNDER_REVIEW">Under Review</mat-option>
+            <mat-option value="APPROVED">Approved</mat-option>
+            <mat-option value="DECLINED">Declined</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field *ngIf="isReviewer$ | async" appearance="outline" class="w-full">
+          <mat-label>Creator Email</mat-label>
+          <input matInput formControlName="creatorEmail">
+        </mat-form-field>
+
+        <div class="flex items-end gap-2">
+          <button mat-raised-button color="primary" type="submit">
+            <mat-icon>filter_list</mat-icon> Apply Filters
+          </button>
+          <button mat-button type="button" (click)="resetFilter()">
+            <mat-icon>clear</mat-icon> Reset
+          </button>
+        </div>
+      </div>
+    </form>
+  </mat-card>
+
+  <!-- Documents Table -->
+  <div class="flex flex-col flex-1 mat-elevation-z8 bg-white rounded-lg overflow-hidden">
+    <div *ngIf="loading()" class="flex justify-center p-6">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <table mat-table [dataSource]="documents()" matSort (matSortChange)="onSortChange($event)" class="w-full flex-1">
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Document Name</th>
+        <td mat-cell *matCellDef="let doc">
+          <a [routerLink]="['/documents', doc.id]" class="text-blue-600 hover:underline">
+            {{ doc.name }}
+          </a>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+        <td mat-cell *matCellDef="let doc">
+          <app-status-badge [status]="doc.status"></app-status-badge>
+        </td>
+      </ng-container>
+
+      <!-- Updated At Column -->
+      <ng-container matColumnDef="updatedAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Updated</th>
+        <td mat-cell *matCellDef="let doc">
+          {{ doc.updatedAt | date:'medium' }}
+        </td>
+      </ng-container>
+
+      <!-- Creator Column (Reviewer only) -->
+      <ng-container matColumnDef="creator">
+        <th mat-header-cell *matHeaderCellDef>Creator</th>
+        <td mat-cell *matCellDef="let doc">
+          <div class="flex flex-col">
+            <span>{{ doc.creator.fullName }}</span>
+            <span class="text-gray-500 text-sm">{{ doc.creator.email }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let doc">
+          <!-- User Actions -->
+          <div *ngIf="(isReviewer$ | async) === false" class="space-x-2">
+            <a [routerLink]="['/documents', doc.id]" mat-icon-button color="primary" matTooltip="View">
+              <mat-icon>visibility</mat-icon>
+            </a>
+
+            <a *ngIf="doc.status === 'DRAFT' || doc.status === 'REVOKE'"
+               [routerLink]="['/documents', doc.id, 'edit']"
+               mat-icon-button
+               color="accent"
+               matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </a>
+
+            <button *ngIf="doc.status === 'DRAFT'"
+                    mat-icon-button
+                    color="primary"
+                    matTooltip="Send to Review"
+                    (click)="sendToReview(doc.id)">
+              <mat-icon>send</mat-icon>
+            </button>
+
+            <button *ngIf="doc.status === 'READY_FOR_REVIEW'"
+                    mat-icon-button
+                    color="warn"
+                    matTooltip="Revoke Review"
+                    (click)="revokeReview(doc.id)">
+              <mat-icon>cancel</mat-icon>
+            </button>
+
+            <button *ngIf="doc.status === 'DRAFT' || doc.status === 'REVOKE'"
+                    mat-icon-button
+                    color="warn"
+                    matTooltip="Delete"
+                    (click)="deleteDocument(doc.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+          <!-- Reviewer Actions -->
+          <div *ngIf="isReviewer$ | async" class="space-x-2">
+            <a [routerLink]="['/documents', doc.id]" mat-icon-button color="primary" matTooltip="View">
+              <mat-icon>visibility</mat-icon>
+            </a>
+
+            <button *ngIf="doc.status === 'READY_FOR_REVIEW'"
+                    mat-icon-button
+                    color="accent"
+                    matTooltip="Mark as Under Review"
+                    (click)="changeStatus(doc.id, 'UNDER_REVIEW')">
+              <mat-icon>fact_check</mat-icon>
+            </button>
+
+            <button *ngIf="doc.status === 'UNDER_REVIEW'"
+                    mat-icon-button
+                    color="primary"
+                    matTooltip="Approve"
+                    (click)="changeStatus(doc.id, 'APPROVED')">
+              <mat-icon>check_circle</mat-icon>
+            </button>
+
+            <button *ngIf="doc.status === 'UNDER_REVIEW'"
+                    mat-icon-button
+                    color="warn"
+                    matTooltip="Decline"
+                    (click)="changeStatus(doc.id, 'DECLINED')">
+              <mat-icon>highlight_off</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell py-4 text-center" [attr.colspan]="displayedColumns.length">
+          No documents found
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator
+      [length]="totalCount()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      [pageIndex]="currentPage()"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+</div>
