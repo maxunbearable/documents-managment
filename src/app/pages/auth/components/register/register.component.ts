@@ -1,29 +1,34 @@
 import { Component } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {CommonModule} from '@angular/common';
-import {AuthService} from '../../services';
-import {RegisterRequest} from '../../models';
-import {MaterialModule} from '../../../../shared';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../../shared/services';
+import { MaterialModule } from '../../../../shared';
+import { RegisterRequest } from '../../../../shared/models';
 
 @Component({
   selector: 'dm-register',
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
     MaterialModule,
     ReactiveFormsModule
-  ]
+  ],
+  styles: [`
+    :host {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+    }
+  `]
 })
 export class RegisterComponent {
   registerForm: FormGroup;
   isLoading = false;
   hidePassword = true;
   hideConfirmPassword = true;
-  errorMessages = []
 
   constructor(
     private fb: FormBuilder,

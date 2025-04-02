@@ -1,22 +1,16 @@
 import { Component } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AuthService } from '../../services';
-import { LoginRequest } from '../../models';
-import {MatCard, MatCardContent, MatCardHeader, MatCardTitle} from '@angular/material/card';
-import {MatError, MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {MatAnchor, MatButton, MatIconButton} from '@angular/material/button';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
-import {MatIcon} from '@angular/material/icon';
-import {CommonModule, NgIf} from '@angular/common';
-import {HttpClient} from '@angular/common/http';
-import {MaterialModule} from '../../../../shared';
+import { AuthService } from '../../../../shared/services';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { MaterialModule } from '../../../../shared';
+import { LoginRequest } from '../../../../shared/models';
 
 @Component({
   selector: 'dm-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -25,7 +19,14 @@ import {MaterialModule} from '../../../../shared';
   ],
   providers: [
     HttpClient,
-  ]
+  ],
+  styles: [`
+    :host {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+    }
+  `]
 })
 export class LoginComponent {
   loginForm: FormGroup;

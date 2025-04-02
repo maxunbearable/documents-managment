@@ -1,12 +1,32 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { DocumentService } from '../../services/document.service';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Router, RouterLink} from '@angular/router';
+import { DocumentService } from '../../services';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {CommonModule} from '@angular/common';
+import {MaterialModule} from '../../../../shared';
 
 @Component({
   selector: 'app-document-upload',
-  templateUrl: './document-upload.component.html'
+  templateUrl: './document-upload.component.html',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MaterialModule,
+    RouterLink
+  ],
+  styles: [`
+    :host {
+      display: flex;
+      flex: 1;
+
+      .cloud-icon {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  `]
 })
 export class DocumentUploadComponent {
   private fb = inject(FormBuilder);

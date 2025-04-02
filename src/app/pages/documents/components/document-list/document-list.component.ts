@@ -2,7 +2,7 @@ import { Component, OnInit, signal, ViewChild, computed, inject } from '@angular
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {AuthService} from '../../../auth/services';
+import {AuthService} from '../../../../shared/services';
 import {DocumentService} from '../../services';
 import {MaterialModule} from '../../../../shared';
 import {CommonModule} from '@angular/common';

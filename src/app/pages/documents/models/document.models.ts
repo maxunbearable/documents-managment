@@ -1,4 +1,4 @@
-import {User} from '../../auth/models';
+import { User } from '../../../shared/models';
 
 export interface Document {
   id: string;

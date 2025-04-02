@@ -1,25 +1,29 @@
-import {DestroyRef, inject, Injectable} from '@angular/core';
+import { DestroyRef, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {BehaviorSubject, Observable, switchMap, tap} from 'rxjs';
-import {AuthResponse, LoginRequest, RegisterRequest, User} from '../models';
-import {environment} from '../../../shared';
-import {TokenService} from '../../../shared/services';
-import {Router} from '@angular/router';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+import { environment } from '../index';
+import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TokenService } from './token.service';
+import { AuthResponse, LoginRequest, RegisterRequest, User } from '../models';
 
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+
   private readonly API_URL = environment.apiUrl;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
 
   currentUser$ = this.currentUserSubject.asObservable();
 
-  private tokenService = inject(TokenService);
-
-  constructor(private http: HttpClient, private router: Router, private destroyRef: DestroyRef) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private destroyRef: DestroyRef,
+    private tokenService: TokenService,
+  ) {
     this.loadStoredUser();
   }
 
@@ -45,6 +49,8 @@ export class AuthService {
   }
 
   getCurrentUser(): Observable<User> {
+    this.router.navigate(['/documents']);
+
     return this.http.get<User>(`${this.API_URL}/user`).pipe(
       tap(user => this.currentUserSubject.next(user))
     );
@@ -58,9 +64,5 @@ export class AuthService {
     this.tokenService.clearToken();
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.tokenService.getAuthToken();
   }
 }

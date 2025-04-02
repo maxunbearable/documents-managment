@@ -1,10 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { catchError, finalize, of } from 'rxjs';
-import {DocumentService} from '../../services';
-import {AuthService} from '../../../auth/services';
-import {CommonModule} from '@angular/common';
+import { catchError, finalize, map, of } from 'rxjs';
+import { DocumentService } from '../../services';
+import { AuthService } from '../../../../shared/services';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '../../../../shared';
+import { StatusBadgeComponent } from '../status-badge/status-badge.component';
+import { Document } from '../../models';
+import { PdfViewerComponent } from '../pdf-viewer/pdf-viewer.component';
 
 declare var PSPDFKit: any;
 
@@ -14,6 +18,10 @@ declare var PSPDFKit: any;
   standalone: true,
   imports: [
     CommonModule,
+    MaterialModule,
+    StatusBadgeComponent,
+    RouterLink,
+    PdfViewerComponent,
   ]
 })
 export class DocumentViewComponent implements OnInit {
@@ -23,11 +31,12 @@ export class DocumentViewComponent implements OnInit {
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
 
-  document = signal<Document | null>(null);
+  document = signal<Document>({} as any);
   loading = signal<boolean>(true);
   error = signal<string | null>(null);
   pdfInstance: any = null;
-  currentUser = this.authService.currentUser$;
+  currentUser$ = this.authService.currentUser$;
+  isReviewer$ = this.currentUser$.pipe(map(user => user?.role === 'REVIEWER'));
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -52,7 +61,7 @@ export class DocumentViewComponent implements OnInit {
       finalize(() => this.loading.set(false))
     ).subscribe(doc => {
       if (doc) {
-        this.document.set(doc);
+        this.document.set(doc as any);
         this.initPDFViewer((doc as any).fileUrl);
       }
     });

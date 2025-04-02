@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import {LoginComponent, RegisterComponent} from './pages/auth/components';
-import {AuthGuard} from './pages/auth/services';
+import {AuthGuard} from './shared/services';
 import {
   DocumentEditComponent,
   DocumentListComponent,

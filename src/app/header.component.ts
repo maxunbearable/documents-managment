@@ -1,11 +1,10 @@
-// components/header/header.component.ts
 import { Component, inject } from '@angular/core';
-import {AuthService} from './pages/auth/services';
-import {RouterLink} from '@angular/router';
-import {MatToolbar} from '@angular/material/toolbar';
-import {MatIconButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
-import {AsyncPipe} from '@angular/common';
+import { AuthService } from './shared/services';
+import { RouterLink } from '@angular/router';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { AsyncPipe, TitleCasePipe } from '@angular/common';
 
 @Component({
   selector: 'dm-header',
@@ -21,7 +20,7 @@ import {AsyncPipe} from '@angular/common';
             <div class="flex items-center">
               <div class="mr-4 text-white">
                 <div class="text-sm">{{ currentUser?.fullName }}</div>
-                <div class="text-xs opacity-80">{{ currentUser?.role === 'USER' ? 'User' : 'Reviewer' }}</div>
+                <div class="text-xs opacity-80">{{ currentUser?.role | titlecase }}</div>
               </div>
             </div>
             <button class="cursor-pointer" mat-icon-button (click)="logout()">
@@ -38,15 +37,17 @@ import {AsyncPipe} from '@angular/common';
     MatIconButton,
     MatIcon,
     AsyncPipe,
+    TitleCasePipe,
   ],
   standalone: true
 })
 export class HeaderComponent {
+
   private authService = inject(AuthService);
 
   currentUser$ = this.authService.currentUser$;
 
-  logout() {
+  logout(): void {
     this.authService.logout();
   }
 }

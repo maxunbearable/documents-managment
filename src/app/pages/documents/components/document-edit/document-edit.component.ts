@@ -1,13 +1,24 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import { DocumentService } from '../../services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, finalize, of } from 'rxjs';
+import {CommonModule} from '@angular/common';
+import {MaterialModule} from '../../../../shared';
+import {PdfViewerComponent} from '../pdf-viewer/pdf-viewer.component';
 
 @Component({
   selector: 'app-document-edit',
-  templateUrl: './document-edit.component.html'
+  templateUrl: './document-edit.component.html',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MaterialModule,
+    RouterLink,
+    ReactiveFormsModule,
+    PdfViewerComponent,
+  ]
 })
 export class DocumentEditComponent implements OnInit {
   private route = inject(ActivatedRoute);

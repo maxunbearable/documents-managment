@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class TokenService {
+
   private readonly TOKEN_KEY = 'auth_token';
 
   getAuthToken(): string | null {
