@@ -17,7 +17,7 @@ export class DocumentService {
 
   constructor(private http: HttpClient) {}
 
-  getDocuments(page: number = 1, size: number = 10, sort?: string, status?: string, creatorId?: string, creatorEmail?: string): Observable<DocumentsResponse> {
+  getDocuments(page: number = 1, size: number = 10, sort?: string, status?: string, creatorEmail?: string): Observable<DocumentsResponse> {
     this.loading.set(true);
 
     let params = new HttpParams()
@@ -25,7 +25,6 @@ export class DocumentService {
       .set('size', size.toString());
 
     if (status) params = params.set('status', status);
-    if (creatorId) params = params.set('creatorId', creatorId);
     if (creatorEmail) params = params.set('creatorEmail', creatorEmail);
 
     return this.http.get<DocumentsResponse>(this.API_URL, { params }).pipe(

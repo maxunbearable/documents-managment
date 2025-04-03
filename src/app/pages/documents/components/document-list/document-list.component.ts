@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, inject, DestroyRef, computed } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -52,29 +52,22 @@ export class DocumentListComponent implements OnInit {
   sortActive = signal<string>('updatedAt');
   sortDirection = signal<'asc' | 'desc'>('desc');
 
-  private readonly defaultColumns = ['name', 'status', 'updatedAt', 'actions'];
+  private readonly defaultColumns = ['name', 'status', 'updatedAt'];
   readonly DocumentStatus = DocumentStatus;
-  displayedColumns: string[] = [];
+
+  displayedColumns = computed<string[]>(() => {
+    return this.isReviewer() ? [...this.defaultColumns, 'creator', 'actions'] : [...this.defaultColumns, 'actions'];
+  });
 
   constructor() {
     this.filterForm = this.fb.group({
       status: [''],
       creatorEmail: ['']
     });
-
-    this.setDisplayColumns();
   }
 
   ngOnInit(): void {
     this.loadDocuments();
-  }
-
-  setDisplayColumns(): void {
-    if (this.isReviewer()) {
-      this.displayedColumns = [...this.defaultColumns, 'creator'];
-    } else {
-      this.displayedColumns = [...this.defaultColumns];
-    }
   }
 
   loadDocuments(): void {
