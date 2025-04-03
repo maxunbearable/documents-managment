@@ -1,59 +1,57 @@
-# DocumentsManagment
+### Головна ціль:
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.5.
+Головною метою є розробка панелі управління документами для користувачів з різними ролями (User, Reviewer). Це дозволить зручніше організувати роботу з документами:
 
-## Development server
+- Для **User** — завантажувати, переглядати, редагувати і змінювати статуси власних документів, а також видаляти або відкликати документи в залежності від статусу.
+- Для **Reviewer** — переглядати документи, змінювати їх статуси та організовувати процес затвердження чи відхилення документів.
 
-To start a local development server, run:
+***Потрібно забезпечити ефективну і зручну взаємодію користувачам***
 
-```bash
-ng serve
-```
+### **Функціональність**
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+1. **Сторінка логіну**:
+  - Авторизація через **JWT;**
+  - Після входу користувача перенаправляє на панель управління документами.
+2. **Панель управління документами**:
 
-## Code scaffolding
+   **By default:** Фільтрація по статусу, сортування по колонках, пагінація.
+   **For Review:** Фільтрація по Creator.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+   |  | User | Review |
+       | --- | --- | --- |
+   | File | ✅ | ✅ |
+   | Status | ✅ | ✅ |
+   | Creator | ❌ | ✅ |
+   | Updated at  | ✅ | ✅ |
 
-```bash
-ng generate component component-name
-```
+   **Note for User Role:** Приходять **тільки власні документи.
+   Note for Review Role:** **Не** приходять документи в статусі “Draft”.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+  1. **Функціонал для User**:
+    - Додавання документа:
+      - Введення назви та завантаження файлу;
+      - Actions: “Зберегти як чернетку”, "Відправити на розгляд".
+    - Редагування документа:
+      - Зміна назви;
+      - Можливість **видаляти документ**, якщо статус "Чернетка" або "Відкликано";
+      - **Відкликати** документ, якщо статус "Чекає розгляду".
+    - Перегляд документу
+  2. **Функціонал для Reviewer**:
+    - Можливість змінювати статус документа:
+      - "На розгляді", "Затверджено", "Відхиллено".
+    - Перегляд документу.
 
-```bash
-ng generate --help
-```
+   ### **Технічні вимоги**:
 
-## Building
+  - **Angular 18+**
+  - **Використання Signals**
+  - **Пагінація, сортування, фільтрація**
+  - Використання [PSPDFKit SDK](https://www.nutrient.io/guides/web/)(Nutrient Web SDK) для перегляду документу
+  - Мова веб-сайту англійська
 
-To build the project run:
+   ### **Додатково (плюси)**:
 
-```bash
-ng build
-```
+  - Базове покриття **unit-тестами**
+  - Використання **Angular Material**
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+   API: https://legaltech-testing.coobrick.app/swagger
