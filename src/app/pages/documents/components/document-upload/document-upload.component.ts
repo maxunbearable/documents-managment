@@ -1,13 +1,17 @@
-import { Component, inject } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { DocumentService } from '../../services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {CommonModule} from '@angular/common';
-import {MaterialModule} from '../../../../shared';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '../../../../shared';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DocumentStatus } from '../../models';
+import { EMPTY, switchMap, tap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-document-upload',
+  selector: 'dm-document-upload',
   templateUrl: './document-upload.component.html',
   standalone: true,
   imports: [
@@ -33,6 +37,7 @@ export class DocumentUploadComponent {
   private documentService = inject(DocumentService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
 
   uploadForm: FormGroup;
   selectedFile: File | null = null;
@@ -50,7 +55,6 @@ export class DocumentUploadComponent {
 
     if (input.files && input.files.length) {
       this.selectedFile = input.files[0];
-      // Update form control value
       this.uploadForm.patchValue({ file: this.selectedFile });
     }
   }
@@ -60,7 +64,7 @@ export class DocumentUploadComponent {
       return;
     }
 
-    this.uploadDocument('DRAFT');
+    this.uploadDocument(DocumentStatus.DRAFT);
   }
 
   sendToReview(): void {
@@ -68,10 +72,10 @@ export class DocumentUploadComponent {
       return;
     }
 
-    this.uploadDocument('READY_FOR_REVIEW');
+    this.uploadDocument(DocumentStatus.READY_FOR_REVIEW);
   }
 
-  private uploadDocument(status: 'DRAFT' | 'READY_FOR_REVIEW'): void {
+  private uploadDocument(status: DocumentStatus): void {
     this.uploading = true;
 
     const formData = new FormData();
@@ -79,29 +83,31 @@ export class DocumentUploadComponent {
     formData.append('file', this.selectedFile as File);
     formData.append('status', status);
 
-    this.documentService.createDocument(formData).subscribe({
-      next: (response) => {
+    this.documentService.createDocument(formData).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      switchMap(response => {
         this.uploading = false;
         this.snackBar.open('Document uploaded successfully', 'Close', { duration: 3000 });
 
-        if (status === 'READY_FOR_REVIEW') {
-          // If sending to review, send additional request
-          this.documentService.sendToReview((response as any).id).subscribe({
-            next: () => this.router.navigate(['/documents']),
-            error: (error) => {
+        if (status === DocumentStatus.READY_FOR_REVIEW) {
+          return this.documentService.sendToReview(response.id).pipe(
+            tap(() => this.router.navigate(['/documents'])),
+            catchError(error => {
               console.error('Error sending to review:', error);
               this.snackBar.open('Error sending document for review', 'Close', { duration: 3000 });
-            }
-          });
-        } else {
-          this.router.navigate(['/documents']);
+              return EMPTY;
+            })
+          );
         }
-      },
-      error: (error) => {
+        this.router.navigate(['/documents']);
+        return EMPTY;
+      }),
+      catchError(error => {
         this.uploading = false;
         console.error('Upload error:', error);
         this.snackBar.open('Error uploading document', 'Close', { duration: 3000 });
-      }
-    });
+        return EMPTY;
+      })
+    ).subscribe();
   }
 }

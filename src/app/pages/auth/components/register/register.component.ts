@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../shared/services';
 import { MaterialModule } from '../../../../shared';
-import { RegisterRequest } from '../../../../shared/models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, finalize, tap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'dm-register',
@@ -34,7 +36,8 @@ export class RegisterComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private destroyRef: DestroyRef,
   ) {
     this.registerForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -58,27 +61,23 @@ export class RegisterComponent {
     }
 
     this.isLoading = true;
-    const registerData: RegisterRequest = {
-      username: this.registerForm.get('username')?.value,
-      email: this.registerForm.get('email')?.value,
-      password: this.registerForm.get('password')?.value,
-      fullName: this.registerForm.get('fullName')?.value,
-      role: this.registerForm.get('role')?.value,
-    };
 
-    this.authService.register(registerData).subscribe({
-      next: () => {
-        this.isLoading = false;
+    this.authService.register(this.registerForm.value).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      tap(() => {
         this.snackBar.open('Registration successful!', 'Close', { duration: 3000 });
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.snackBar.open(error.error?.message || 'Registration failed. Please try again.', 'Close', {
-          duration: 5000
-        });
-      }
-    });
+        this.router.navigate(['/login']);
+      }),
+      catchError(error => {
+        this.snackBar.open(
+          error.error?.message || 'Registration failed. Please try again.',
+          'Close',
+          { duration: 5000 }
+        );
+        return EMPTY;
+      }),
+      finalize(() => this.isLoading = false)
+    ).subscribe();
   }
 
   navigateToLogin(): void {

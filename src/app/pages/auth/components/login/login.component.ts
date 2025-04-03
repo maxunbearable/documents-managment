@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -7,6 +7,9 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { MaterialModule } from '../../../../shared';
 import { LoginRequest } from '../../../../shared/models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, finalize, switchMap, tap } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'dm-login',
@@ -37,7 +40,8 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private destroyRef: DestroyRef,
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -53,18 +57,20 @@ export class LoginComponent {
     this.isLoading = true;
     const loginData: LoginRequest = this.loginForm.value;
 
-    this.authService.login(loginData).subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.router.navigate(['/documents']);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.snackBar.open(error.error?.message || 'Login failed. Please try again.', 'Close', {
-          duration: 5000
-        });
-      }
-    });
+    this.authService.login(loginData).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      switchMap(() => this.authService.getCurrentUser()),
+      tap(() => this.router.navigate(['/documents'])),
+      catchError(error => {
+        this.snackBar.open(
+          error.error?.message || 'Login failed. Please try again.',
+          'Close',
+          { duration: 5000 }
+        );
+        return EMPTY;
+      }),
+      finalize(() => this.isLoading = false)
+    ).subscribe();
   }
 
   navigateToRegister(): void {

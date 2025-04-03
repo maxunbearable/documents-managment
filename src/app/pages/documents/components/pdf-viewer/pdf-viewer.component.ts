@@ -1,8 +1,8 @@
-import {Component, effect, input, OnInit} from '@angular/core';
+import { Component, effect, input } from '@angular/core';
 import NutrientViewer from '@nutrient-sdk/viewer';
 
 @Component({
-  selector: 'pdf-viewer',
+  selector: 'dm-pdf-viewer',
   template: `
     <div class="pdf-viewer bg-white rounded-lg shadow overflow-hidden">
       <div id="pspdfkit-container" class="w-full"></div>

@@ -14,8 +14,7 @@ import { TokenService } from './token.service';
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private tokenService = inject(TokenService);
-
-  constructor(private router: Router) {}
+  private router = inject(Router);
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = this.tokenService.getAuthToken();

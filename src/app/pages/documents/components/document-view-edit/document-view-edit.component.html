@@ -1,0 +1,162 @@
+<div class="container mx-auto p-4">
+  <div class="flex items-center mb-6">
+    <button mat-icon-button routerLink="/documents">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="text-2xl font-bold ml-2">
+      @if(editMode()) {
+        Edit Document
+      } @else {
+        {{ document().name || 'Document Details' }}
+      }
+    </h1>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center my-12">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+      <p>{{ error() }}</p>
+      <button mat-button color="primary" routerLink="/documents">Back to Documents</button>
+    </div>
+  }
+
+  @if (document() && !loading() && !error()) {
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <!-- Info/Edit panel -->
+      <div class="md:col-span-1">
+        <mat-card class="p-4">
+          @if (editMode()) {
+            <mat-card-header>
+              <mat-card-title>Edit Document</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="pt-4">
+              <form [formGroup]="editForm" (ngSubmit)="onSubmit()">
+                <mat-form-field appearance="outline" class="w-full mb-4">
+                  <mat-label>Document Name</mat-label>
+                  <input matInput formControlName="name" placeholder="Enter document name">
+                  @if (editForm.get('name')?.hasError('required')) {
+                    <mat-error>Document name is required</mat-error>
+                  }
+                  @if (editForm.get('name')?.hasError('maxlength')) {
+                    <mat-error>Maximum length is 100 characters</mat-error>
+                  }
+                </mat-form-field>
+
+                <div class="flex justify-end gap-4">
+                  <button mat-button type="button" (click)="cancelEdit()">
+                    Cancel
+                  </button>
+                  <button mat-raised-button
+                          color="primary"
+                          type="submit"
+                          [disabled]="editForm.invalid || saving()">
+                    <mat-icon>save</mat-icon>
+                    Save Changes
+                  </button>
+                </div>
+
+                @if (saving()) {
+                  <div class="flex justify-center mt-4">
+                    <mat-spinner diameter="30"></mat-spinner>
+                    <span class="ml-2">Saving changes...</span>
+                  </div>
+                }
+              </form>
+            </mat-card-content>
+          } @else {
+            <mat-card-header>
+              <mat-card-title>Document Information</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="pt-4">
+              <div class="mb-4">
+                <div class="text-gray-500 text-sm">Status</div>
+                <dm-status-badge [status]="document()!.status"/>
+              </div>
+
+              @if (document().creator) {
+                <div class="mb-4">
+                  <div class="text-gray-500 text-sm">Created By</div>
+                  <div>{{ document().creator.fullName }}</div>
+                  <div class="text-sm">{{ document().creator.email }}</div>
+                </div>
+              }
+
+              <div class="mb-4">
+                <div class="text-gray-500 text-sm">Created At</div>
+                <div>{{ document().createdAt | date:'medium' }}</div>
+              </div>
+
+              <div class="mb-4">
+                <div class="text-gray-500 text-sm">Last Updated</div>
+                <div>{{ document().updatedAt | date:'medium' }}</div>
+              </div>
+
+              <div class="mt-6 space-y-2">
+                @if ((currentUser$ | async)?.role === 'USER' && (currentUser$ | async)?.id === document()?.creator?.id) {
+                  @if (document()!.status === 'DRAFT' || document()!.status === 'REVOKE') {
+                    <button mat-stroked-button color="primary" class="w-full" (click)="toggleEditMode()">
+                      <mat-icon>edit</mat-icon> Edit Document
+                    </button>
+                  }
+
+                  @if (document()!.status === 'DRAFT') {
+                    <button mat-stroked-button color="primary" class="w-full"
+                            (click)="sendToReview(document()!.id)">
+                      <mat-icon>send</mat-icon> Send to Review
+                    </button>
+                  }
+
+                  @if (document()!.status === 'READY_FOR_REVIEW') {
+                    <button mat-stroked-button color="warn" class="w-full"
+                            (click)="revokeReview(document()!.id)">
+                      <mat-icon>cancel</mat-icon> Revoke Review
+                    </button>
+                  }
+
+                  @if (document()!.status === 'DRAFT' || document()!.status === 'REVOKE') {
+                    <button mat-stroked-button color="warn" class="w-full"
+                            (click)="deleteDocument(document()!.id)">
+                      <mat-icon>delete</mat-icon> Delete Document
+                    </button>
+                  }
+                }
+
+                @if (isReviewer$ | async) {
+                  @if (document()!.status === 'READY_FOR_REVIEW') {
+                    <button mat-stroked-button color="primary" class="w-full"
+                            (click)="changeStatus(document()!.id, DocumentStatus.UNDER_REVIEW)">
+                      <mat-icon>fact_check</mat-icon> Mark as Under Review
+                    </button>
+                  }
+
+                  @if (document()!.status === 'UNDER_REVIEW') {
+                    <button mat-stroked-button color="primary" class="w-full"
+                            (click)="changeStatus(document()!.id, DocumentStatus.APPROVED)">
+                      <mat-icon>check_circle</mat-icon> Approve Document
+                    </button>
+                  }
+
+                  @if (document()!.status === 'UNDER_REVIEW') {
+                    <button mat-stroked-button color="warn" class="w-full"
+                            (click)="changeStatus(document()!.id, DocumentStatus.DECLINED)">
+                      <mat-icon>highlight_off</mat-icon> Decline Document
+                    </button>
+                  }
+                }
+              </div>
+            </mat-card-content>
+          }
+        </mat-card>
+      </div>
+
+      <div class="md:col-span-3">
+        <dm-pdf-viewer [fileUrl]="document().fileUrl"/>
+      </div>
+    </div>
+  }
+</div>

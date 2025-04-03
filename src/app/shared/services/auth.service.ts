@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../index';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -34,18 +34,14 @@ export class AuthService {
     }
   }
 
-  login(credentials: LoginRequest): Observable<User> {
+  login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/auth/login`, credentials).pipe(
       tap(response => this.tokenService.setToken(response.access_token)),
-      switchMap(() => this.getCurrentUser())
     );
   }
 
   register(data: RegisterRequest): Observable<User> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/user/register`, data).pipe(
-      tap(response => this.tokenService.setToken(response.access_token)),
-      switchMap(() => this.getCurrentUser())
-    );
+    return this.http.post<User>(`${this.API_URL}/user/register`, data);
   }
 
   getCurrentUser(): Observable<User> {

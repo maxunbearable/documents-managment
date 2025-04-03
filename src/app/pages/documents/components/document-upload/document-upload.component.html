@@ -11,12 +11,12 @@
       <mat-form-field appearance="outline" class="w-full mb-4">
         <mat-label>Document Name</mat-label>
         <input matInput formControlName="name" placeholder="Enter document name">
-        <mat-error *ngIf="uploadForm.get('name')?.hasError('required')">
-          Document name is required
-        </mat-error>
-        <mat-error *ngIf="uploadForm.get('name')?.hasError('maxlength')">
-          Maximum length is 100 characters
-        </mat-error>
+        @if (uploadForm.get('name')?.hasError('required')) {
+          <mat-error>Document name is required</mat-error>
+        }
+        @if (uploadForm.get('name')?.hasError('maxlength')) {
+          <mat-error>Maximum length is 100 characters</mat-error>
+        }
       </mat-form-field>
 
       <div class="mb-6">
@@ -30,43 +30,52 @@
 
           <mat-icon class="text-gray-400 text-4xl mb-2 cloud-icon">cloud_upload</mat-icon>
 
-          <div *ngIf="!selectedFile" class="text-gray-500">
-            Click to select a document file
+          @if (!selectedFile) {
+            <div class="text-gray-500">
+              Click to select a document file
+            </div>
+          }
+
+          @if (selectedFile) {
+            <div class="text-green-600">
+              Selected: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(1) }} KB)
+            </div>
+          }
+        </div>
+
+        @if (uploadForm.get('file')?.hasError('required') && uploadForm.get('file')?.touched) {
+          <div class="text-red-500 mt-2 text-sm">
+            Please select a file
           </div>
-<div *ngIf="selectedFile" class="text-green-600">
-  Selected: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(1) }} KB)
-</div>
-</div>
+        }
+      </div>
 
-<div *ngIf="uploadForm.get('file')?.hasError('required') && uploadForm.get('file')?.touched" class="text-red-500 mt-2 text-sm">
-  Please select a file
-</div>
-</div>
+      <div class="flex justify-end gap-4">
+        <button mat-button routerLink="/documents">
+          Cancel
+        </button>
+        <button mat-raised-button
+                color="accent"
+                [disabled]="uploadForm.invalid || uploading"
+                (click)="saveAsDraft()">
+          <mat-icon>save</mat-icon>
+          Save as Draft
+        </button>
+        <button mat-raised-button
+                color="primary"
+                [disabled]="uploadForm.invalid || uploading"
+                (click)="sendToReview()">
+          <mat-icon>send</mat-icon>
+          Send to Review
+        </button>
+      </div>
 
-<div class="flex justify-end gap-4">
-  <button mat-button routerLink="/documents">
-    Cancel
-  </button>
-  <button mat-raised-button
-          color="accent"
-          [disabled]="uploadForm.invalid || uploading"
-          (click)="saveAsDraft()">
-    <mat-icon>save</mat-icon>
-    Save as Draft
-  </button>
-  <button mat-raised-button
-          color="primary"
-          [disabled]="uploadForm.invalid || uploading"
-          (click)="sendToReview()">
-    <mat-icon>send</mat-icon>
-    Send to Review
-  </button>
-</div>
-
-<div *ngIf="uploading" class="flex justify-center mt-4">
-  <mat-spinner diameter="30"></mat-spinner>
-  <span class="ml-2">Uploading document...</span>
-</div>
-</form>
-</mat-card>
+      @if (uploading) {
+        <div class="flex justify-center mt-4">
+          <mat-spinner diameter="30"></mat-spinner>
+          <span class="ml-2">Uploading document...</span>
+        </div>
+      }
+    </form>
+  </mat-card>
 </div>

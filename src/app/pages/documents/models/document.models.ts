@@ -1,9 +1,18 @@
 import { User } from '../../../shared/models';
 
+export enum DocumentStatus {
+  APPROVED = 'APPROVED',
+  DECLINED = 'DECLINED',
+  DRAFT = 'DRAFT',
+  REVOKE = 'REVOKE',
+  READY_FOR_REVIEW = 'READY_FOR_REVIEW',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+}
+
 export interface Document {
   id: string;
   name: string;
-  status: 'DRAFT' | 'REVOKE' | 'READY_FOR_REVIEW' | 'UNDER_REVIEW' | 'APPROVED' | 'DECLINED';
+  status: DocumentStatus;
   fileUrl: string;
   updatedAt: string;
   createdAt: string;
@@ -20,5 +29,5 @@ export interface DocumentUpdate {
 }
 
 export interface StatusUpdate {
-  status: 'UNDER_REVIEW' | 'APPROVED' | 'DECLINED';
+  status: DocumentStatus;
 }

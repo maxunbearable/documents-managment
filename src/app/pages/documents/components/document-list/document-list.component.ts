@@ -1,17 +1,19 @@
-import { Component, OnInit, signal, ViewChild, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, inject, DestroyRef } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
-import {FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {AuthService} from '../../../../shared/services';
-import {DocumentService} from '../../services';
-import {MaterialModule} from '../../../../shared';
-import {CommonModule} from '@angular/common';
-import {RouterLink} from '@angular/router';
-import {StatusBadgeComponent} from '../status-badge/status-badge.component';
-import {map} from 'rxjs';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../../../shared/services';
+import { DocumentService } from '../../services';
+import { MaterialModule } from '../../../../shared';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { StatusBadgeComponent } from '../status-badge/status-badge.component';
+import { map } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { DocumentStatus } from '../../models';
 
 @Component({
-  selector: 'app-document-list',
+  selector: 'dm-document-list',
   templateUrl: './document-list.component.html',
   standalone: true,
   imports: [
@@ -32,30 +34,26 @@ export class DocumentListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  // Services
   private documentService = inject(DocumentService);
   private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
 
-  // Signals
   documents = this.documentService.documents;
   totalCount = this.documentService.totalCount;
   loading = this.documentService.loading;
   currentUser$ = this.authService.currentUser$;
+  isReviewer = toSignal(this.currentUser$.pipe(map(user => user?.role === 'REVIEWER')));
 
-  // Computed signals
-  isReviewer$ = this.currentUser$.pipe(map(user => user?.role === 'REVIEWER'));
-
-  // Filter form
   filterForm: FormGroup;
 
-  // Pagination and sorting state
   pageSize = signal<number>(10);
   currentPage = signal<number>(0);
   sortActive = signal<string>('updatedAt');
   sortDirection = signal<'asc' | 'desc'>('desc');
 
-  // Column definitions
+  private readonly defaultColumns = ['name', 'status', 'updatedAt', 'actions'];
+  readonly DocumentStatus = DocumentStatus;
   displayedColumns: string[] = [];
 
   constructor() {
@@ -64,7 +62,6 @@ export class DocumentListComponent implements OnInit {
       creatorEmail: ['']
     });
 
-    // Set columns based on user role
     this.setDisplayColumns();
   }
 
@@ -73,31 +70,26 @@ export class DocumentListComponent implements OnInit {
   }
 
   setDisplayColumns(): void {
-    const baseColumns = ['name', 'status', 'updatedAt'];
-
-    if (this.isReviewer$) {
-      this.displayedColumns = [...baseColumns, 'creator', 'actions'];
+    if (this.isReviewer()) {
+      this.displayedColumns = [...this.defaultColumns, 'creator'];
     } else {
-      this.displayedColumns = [...baseColumns, 'actions'];
+      this.displayedColumns = [...this.defaultColumns];
     }
   }
 
   loadDocuments(): void {
     const filters = this.filterForm.value;
-    let creatorId, creatorEmail;
+    let creatorEmail;
 
-    if (this.isReviewer$) {
+    if (this.isReviewer()) {
       creatorEmail = filters.creatorEmail;
     }
-
-    // For USER role, we don't need to filter as the API only returns user's own documents
 
     this.documentService.getDocuments(
       this.currentPage() + 1,
       this.pageSize(),
       `${this.sortActive()}:${this.sortDirection()}`,
       filters.status,
-      creatorId,
       creatorEmail
     ).subscribe();
   }
@@ -113,7 +105,6 @@ export class DocumentListComponent implements OnInit {
       this.sortActive.set(sort.active);
       this.sortDirection.set(sort.direction as 'asc' | 'desc');
     } else {
-      // Default sort
       this.sortActive.set('updatedAt');
       this.sortDirection.set('desc');
     }
@@ -132,30 +123,21 @@ export class DocumentListComponent implements OnInit {
     this.loadDocuments();
   }
 
-  // Document actions
   sendToReview(id: string): void {
-    this.documentService.sendToReview(id).subscribe(() => {
-      this.loadDocuments();
-    });
+    this.documentService.sendToReview(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadDocuments());
   }
 
   revokeReview(id: string): void {
-    this.documentService.revokeReview(id).subscribe(() => {
-      this.loadDocuments();
-    });
+    this.documentService.revokeReview(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadDocuments());
   }
 
   deleteDocument(id: string): void {
     if (confirm('Are you sure you want to delete this document?')) {
-      this.documentService.deleteDocument(id).subscribe(() => {
-        this.loadDocuments();
-      });
+      this.documentService.deleteDocument(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadDocuments());
     }
   }
 
-  changeStatus(id: string, status: 'UNDER_REVIEW' | 'APPROVED' | 'DECLINED'): void {
-    this.documentService.changeStatus(id, { status }).subscribe(() => {
-      this.loadDocuments();
-    });
+  changeStatus(id: string, status: DocumentStatus): void {
+    this.documentService.changeStatus(id, { status }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadDocuments());
   }
 }

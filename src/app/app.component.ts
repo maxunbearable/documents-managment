@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {HeaderComponent} from './header.component';
+import { HeaderComponent } from './header.component';
 
 @Component({
   selector: 'app-root',
@@ -8,5 +8,4 @@ import {HeaderComponent} from './header.component';
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  title = 'documents-managment';
 }
