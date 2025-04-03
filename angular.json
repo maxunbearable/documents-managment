@@ -17,6 +17,9 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "optimization": {
+              "fonts": false
+            },
             "outputPath": "dist/documents-managment",
             "baseHref": "/documents-managment/",
             "index": "src/index.html",
